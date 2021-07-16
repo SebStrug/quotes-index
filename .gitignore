@@ -1,0 +1,10 @@
+.vscode/
+__pycache__/
+
+quotes/*.txt
+quotes/*.json
+
+# file where I stored initial quotes
+main.txt
+# program to split up all initial quotes
+split_quotes.py
