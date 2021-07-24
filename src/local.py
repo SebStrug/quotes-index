@@ -21,6 +21,10 @@ class IndexHandler:
         """Write a dictionary containing an inverted index to path"""
         raise NotImplementedError
 
+    @abstractmethod
+    def load_index(self, *args: Any):
+        """Load in an dictionary containing an inverted index from path"""
+
 
 class LocalIndexHandler(IndexHandler):
     """Interact with local files to handle index"""
@@ -48,3 +52,14 @@ class LocalIndexHandler(IndexHandler):
         path = Path(self.local_path) / f"{prefix}-{dt_str}.json"
         with path.open("w") as f:
             json.dump(index, f)
+
+    def load_index(self, prefix: str) -> Dict:
+        """Searches the local path for a prefix, loads in the latest
+        associated object from JSON as a dictionary.
+        """
+        objs = list(Path(self.local_path).glob(f'{prefix}*.json'))
+        if not objs:
+            raise FileNotFoundError(f'No objects with prefix: {prefix}')
+        with objs[-1].open('r') as f:
+            data = json.load(f)
+        return data

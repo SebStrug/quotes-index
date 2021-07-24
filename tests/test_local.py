@@ -40,3 +40,14 @@ def test_write_index(tmp_path):
     with index_files[0].open("r") as f:
         res_index = json.load(f)
     assert res_index == index
+
+
+def test_load_index(tmp_path):
+    obj = {"a": 1, "b": 2}
+    path = Path(tmp_path) / 'test_file.json'
+    with open(path, 'w') as f:
+        json.dump(obj, f)
+
+    index_handler = LocalIndexHandler(tmp_path)
+    data = index_handler.load_index('test')
+    assert data == obj
