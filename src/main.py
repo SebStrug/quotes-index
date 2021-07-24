@@ -36,8 +36,8 @@ def main():
 
     file_text_it = index_handler.iterate_text_pairs()
     inverted_index = create_inverted_index(file_text_it)
-    index_handler.write_index(inverted_index)
-    print(WORD_ID_MAP)
+    index_handler.write_index("index", inverted_index)
+    index_handler.write_index("word-ids", WORD_ID_MAP)
 
 
 if __name__ == "__main__":
