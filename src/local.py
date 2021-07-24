@@ -8,6 +8,7 @@ import itertools
 
 class IndexHandler:
     """Interface for loading files into iterator of file IDs and lines"""
+
     @abstractmethod
     def iterate_text_pairs(self, *args: Any) -> Iterator[Tuple[int, str]]:
         """Generate successive pairs of (<file id>, <line from file>) tuples
@@ -33,14 +34,17 @@ class LocalIndexHandler(IndexHandler):
         self.local_path = local_path
 
     def iterate_text_pairs(self):
-        for fname in Path(self.local_path).glob('*.txt'):
+        for fname in Path(self.local_path).glob("*.txt"):
             file_id = int(fname.stem)
             file_id_iterator = itertools.repeat(file_id)
-            with fname.open('r') as f:
+            with fname.open("r") as f:
                 yield from zip(file_id_iterator, f.read().splitlines())
 
-    def write_index(self, index: Dict):
-        dt_str = datetime.now().strftime('%Y-%m-%d--%H:%M')
-        path = Path(self.local_path) / f'index-{dt_str}.json'
-        with path.open('w') as f:
+    def write_index(self, prefix: str, index: Dict):
+        """Write a dictionary to a file with the filename as
+        <path>/<prefix>-YYYY-MM-DD--HH:MM.json
+        """
+        dt_str = datetime.now().strftime("%Y-%m-%d--%H:%M")
+        path = Path(self.local_path) / f"{prefix}-{dt_str}.json"
+        with path.open("w") as f:
             json.dump(index, f)
