@@ -17,8 +17,7 @@ class S3TestCase(unittest.TestCase):
         # you can use boto3.client('s3') if you prefer
         self.s3 = boto3.resource("s3")
         bucket = self.s3.Bucket(self.bucket)
-        bucket.create(CreateBucketConfiguration={
-                      "LocationConstraint": aws.REGION})
+        bucket.create(CreateBucketConfiguration={"LocationConstraint": aws.REGION})
 
     def tearDown(self):
         self.mock_s3.stop()
