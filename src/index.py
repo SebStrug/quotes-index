@@ -29,8 +29,7 @@ def get_text_word_ids(text: str) -> Iterator[int]:
         if word == "":
             continue
         # Remove punctuation, make string uniform
-        word = word.translate(str.maketrans(
-            "", "", string.punctuation)).lower()
+        word = word.translate(str.maketrans("", "", string.punctuation)).lower()
         yield WORD_ID_MAP[word]
 
 
@@ -51,7 +50,7 @@ def get_word_file_pairs(file_id: int, text: str) -> Iterator[WordFilePair]:
 
 
 def create_inverted_index(
-    file_line_it: Iterator[WordFilePair]
+    file_line_it: Iterator[WordFilePair],
 ) -> defaultdict[int, List[int]]:
     """Given an iterator producing pairs of (<file-id>, <line-from-file>), produce
     an inverted index containing a mapping for each word ID to the set of all file IDs
