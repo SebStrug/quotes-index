@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+import os
 
 import pytest
 import boto3
@@ -71,29 +72,21 @@ def bucket_name():
 
 @pytest.fixture
 def region():
-    return 'eu-west-1'
+    return "eu-west-1"
 
 
 @pytest.fixture
-def s3_test(s3_resource, bucket_name, region):
+def aws_credentials(bucket_name, region):
+    """Mocked AWS Credentials for moto."""
+    os.environ["S3_BUCKET"] = bucket_name
+    os.environ["AWS_REGION"] = region
+
+
+@pytest.fixture
+def s3_test(s3_resource, bucket_name, region, aws_credentials):
     bucket = s3_resource.Bucket(bucket_name)
-    bucket.create(CreateBucketConfiguration={
-        "LocationConstraint": region})
+    bucket.create(CreateBucketConfiguration={"LocationConstraint": region})
     yield
-
-
-# @pytest.fixture()
-# def s3_test_case():
-#     region = "eu-west-1"
-#     mocked_s3 = mock_s3()
-#     mocked_s3.start()
-
-#     s3 = boto3.resource("s3")
-#     bucket = s3.Bucket(AWS_BUCKET)
-#     bucket.create(CreateBucketConfiguration={
-#         "LocationConstraint": region})
-#     yield s3
-#     mocked_s3.stop()
 
 
 def test_aws_iterate_text_pairs(s3_resource, bucket_name, s3_test):
@@ -103,9 +96,9 @@ def test_aws_iterate_text_pairs(s3_resource, bucket_name, s3_test):
     object = s3_resource.Object(bucket_name, "2.txt")
     object.put(Body="baz")
 
-    index_handler = AWSIndexHandler()
+    index_handler = AWSIndexHandler(s3_resource)
 
-    it = index_handler.iterate_text_pairs(s3_resource, bucket_name)
+    it = index_handler.iterate_text_pairs()
     assert (1, b"foo") == next(it)
     assert (1, b"bar") == next(it)
     assert (2, b"baz") == next(it)
@@ -118,8 +111,7 @@ def test_aws_iterate_text_pairs(s3_resource, bucket_name, s3_test):
 def test_aws_write_index(s3_resource, bucket_name, s3_test):
     input_dict = {"1": ["1", "2", "3"], "2": ["2", "3"]}
 
-    index_handler = AWSIndexHandler()
-    index_handler.write_index(s3_resource, bucket_name,
-                              "index.json", input_dict)
+    index_handler = AWSIndexHandler(s3_resource)
+    index_handler.write_index("index.json", input_dict)
     body = s3_resource.Object(bucket_name, "index.json").get()["Body"]
     assert input_dict == json.load(body)

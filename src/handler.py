@@ -72,23 +72,24 @@ class LocalIndexHandler(IndexHandler):
 
 
 class AWSIndexHandler(IndexHandler):
-    def __init__(self):
+    def __init__(self, s3_res: Any):
+        """
+        Args:
+            s3_res: instantiated s3 resource object
+        """
         self.bucket = os.getenv("S3_BUCKET")
-        self.region = os.getenv("S3_REGION", "eu-west-1")
+        self.region = os.getenv("AWS_REGION", "eu-west-1")
+        self.s3_res = s3_res
 
-    def iterate_text_pairs(self, s3_res: Any, bucket: str) -> Iterator[Tuple[int, str]]:
+    def iterate_text_pairs(self) -> Iterator[Tuple[int, str]]:
         """Generate successive pairs of (<s3-key>, <line-from-s3-file>) tuples from files
         in a s3 bucket which are labeled by their order in the bucket.
         i.e. '1.txt', '2.txt', ...
 
-        Args:
-            s3_res: instantiated s3 resource object
-            bucket: name of bucket to access
-
         Returns:
             iterator yielding (<file-id>, <line-from-file>) pairs
         """
-        bucket = s3_res.Bucket(bucket)
+        bucket = self.s3_res.Bucket(self.bucket)
         logger.info(f"Iterating through items in bucket: {bucket}")
 
         for f in bucket.objects.all():
@@ -103,7 +104,7 @@ class AWSIndexHandler(IndexHandler):
 
             yield from zip(file_id_iterator, obj["Body"].iter_lines())
 
-    def write_index(self, s3_res: Any, bucket: str, s3_key: str, index: Dict):
+    def write_index(self, s3_key: str, index: Dict):
         """Write an dictionary to a s3 path
 
         Args:
@@ -117,9 +118,8 @@ class AWSIndexHandler(IndexHandler):
             return
 
         try:
-            object = s3_res.Object(bucket, s3_key)
+            object = self.s3_res.Object(self.bucket, s3_key)
             object.put(Body=json.dumps(index))
         except BotoCoreError:
-            logger.error(
-                f"Failed to upload dictionary to key: {s3_key}", exc_info=True)
+            logger.error(f"Failed to upload dictionary to key: {s3_key}", exc_info=True)
             raise

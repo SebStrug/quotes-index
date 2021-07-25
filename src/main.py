@@ -1,10 +1,7 @@
 """Generate an inverted index.
 
-Use local files:
-$ python -m src.main --source local
-
-Use AWS:
-$ python -m src.main --source aws
+Use local files or AWS:
+$ python -m src.main --source <local/aws>
 """
 
 import argparse
@@ -13,7 +10,7 @@ from pathlib import Path
 import boto3
 
 from src.index import create_inverted_index, WORD_ID_MAP
-from src.local import LocalIndexHandler
+from src.handler import LocalIndexHandler, AWSIndexHandler
 
 
 def parse_args():
@@ -31,8 +28,8 @@ def main():
         quotes_path = Path(__file__).parent.parent / "quotes"
         index_handler = LocalIndexHandler(quotes_path)
     elif args.source == "aws":
-        _ = boto3.resource("s3")
-        ...
+        s3_res = boto3.resource("s3")
+        index_handler = AWSIndexHandler(s3_res)
 
     file_text_it = index_handler.iterate_text_pairs()
     inverted_index = create_inverted_index(file_text_it)
