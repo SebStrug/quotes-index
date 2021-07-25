@@ -6,7 +6,18 @@ import pytest
 import boto3
 from moto import mock_s3
 
-from src.handler import LocalHandler, AWSHandler
+from src.handler import LocalHandler, AWSHandler, form_quote
+
+
+def test_form_quote():
+    input = {
+        "content": "some other quote",
+        "lead_in": None,
+        "attribution": "Seb",
+        "source": "This test",
+    }
+    expected = "'some other quote'\nSeb, This test"
+    assert expected == form_quote(input.pop('content'), **input)
 
 
 def test_local_iterate_text_pairs(tmp_path):

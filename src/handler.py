@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Any, Iterator, Tuple, Dict
+from typing import Any, Iterator, Tuple, Dict, Optional
 from datetime import datetime
 from pathlib import Path
 import json
@@ -10,6 +10,36 @@ import logging
 from botocore.exceptions import BotoCoreError
 
 logger = logging.getLogger(__name__)
+
+
+def form_quote(
+    content: str,
+    attribution: str = "Anonymous",
+    lead_in: Optional[str] = None,
+    source: Optional[str] = None,
+) -> str:
+    """Create a quote out of several provided fields
+
+    Args:
+        content: body of the quote
+        attribution: who said/wrote the quote. Defaults to 'Anonymous'
+        lead_in: initial/background info on quote e.g. 'On the meaning of life'
+        source: Origin of the quote
+
+    Returns:
+        Quote of the form
+        ```
+        <lead_in>...
+        <content>
+        <attribution>, <source>
+    """
+    if not content:
+        raise ValueError("No quote provided")
+
+    lead_in = lead_in + "..." if lead_in else ""
+
+    ending = ", ".join(filter(None, (attribution, source)))
+    return "\n".join((lead_in, f"'{content}'", ending)).strip()
 
 
 class Handler:
