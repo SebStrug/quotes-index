@@ -12,7 +12,7 @@ from botocore.exceptions import BotoCoreError
 logger = logging.getLogger(__name__)
 
 
-class IndexHandler:
+class Handler:
     """Interface for loading files into iterator of file IDs and lines"""
 
     @abstractmethod
@@ -32,7 +32,7 @@ class IndexHandler:
         """Load in an dictionary containing an inverted index from path"""
 
 
-class LocalIndexHandler(IndexHandler):
+class LocalHandler(Handler):
     """Interact with local files to handle index"""
 
     def __init__(self, local_path: Path):
@@ -71,7 +71,7 @@ class LocalIndexHandler(IndexHandler):
         return data
 
 
-class AWSIndexHandler(IndexHandler):
+class AWSHandler(Handler):
     def __init__(self, s3_res: Any):
         """
         Args:
@@ -121,5 +121,6 @@ class AWSIndexHandler(IndexHandler):
             object = self.s3_res.Object(self.bucket, s3_key)
             object.put(Body=json.dumps(index))
         except BotoCoreError:
-            logger.error(f"Failed to upload dictionary to key: {s3_key}", exc_info=True)
+            logger.error(
+                f"Failed to upload dictionary to key: {s3_key}", exc_info=True)
             raise

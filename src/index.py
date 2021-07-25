@@ -1,14 +1,9 @@
 """Index.py contais functions for creating an inverted index."""
 
 from collections import defaultdict
-from typing import Iterator, List, Tuple
+from typing import Iterator, List
 import itertools
-from datetime import datetime
 import string
-
-import boto3
-
-from src import aws
 
 # Create a mapping from words to unique IDs
 # ~470,000 words in English, should be fine to store in memory
@@ -56,7 +51,7 @@ def get_word_file_pairs(file_id: int, text: str) -> Iterator[WordFilePair]:
 
 
 def create_inverted_index(
-    file_line_it: Iterator[Tuple[int, str]]
+    file_line_it: Iterator[WordFilePair]
 ) -> defaultdict[int, List[int]]:
     """Given an iterator producing pairs of (<file-id>, <line-from-file>), produce
     an inverted index containing a mapping for each word ID to the set of all file IDs
@@ -81,16 +76,3 @@ def create_inverted_index(
         word_file_map[word_id].sort()
 
     return word_file_map
-
-
-def main():
-    s3 = boto3.resource("s3")
-
-    # Iterate through all lines in all S3 files, get (<word-id>,<file-id>) pairs
-    file_text_it = aws.iterate_text_pairs(s3, aws.BUCKET)
-    inverted_index = create_inverted_index(file_text_it)
-
-    dt_now = datetime.now().strftime("%Y-%m-%d--%H:%M")
-    aws.write_index(s3, aws.BUCKET, f"index--{dt_now}", inverted_index)
-    # Writing the word-id map is not mentioned in spec, but it's obviously required
-    aws.write_index(s3, aws.BUCKET, f"word-mapping--{dt_now}", WORD_ID_MAP)

@@ -10,7 +10,7 @@ from pathlib import Path
 import boto3
 
 from src.index import create_inverted_index, WORD_ID_MAP
-from src.handler import LocalIndexHandler, AWSIndexHandler
+from src.handler import LocalHandler, AWSHandler
 
 
 def parse_args():
@@ -26,10 +26,10 @@ def main():
 
     if args.source == "local":
         quotes_path = Path(__file__).parent.parent / "quotes"
-        index_handler = LocalIndexHandler(quotes_path)
+        index_handler = LocalHandler(quotes_path)
     elif args.source == "aws":
         s3_res = boto3.resource("s3")
-        index_handler = AWSIndexHandler(s3_res)
+        index_handler = AWSHandler(s3_res)
 
     file_text_it = index_handler.iterate_text_pairs()
     inverted_index = create_inverted_index(file_text_it)

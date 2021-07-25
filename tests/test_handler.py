@@ -6,7 +6,7 @@ import pytest
 import boto3
 from moto import mock_s3
 
-from src.handler import LocalIndexHandler, AWSIndexHandler
+from src.handler import LocalHandler, AWSHandler
 
 
 def test_local_iterate_text_pairs(tmp_path):
@@ -20,7 +20,7 @@ def test_local_iterate_text_pairs(tmp_path):
     origin_2 = "Musician"
     path_2.write_text("\n".join((quote_2, origin_2)))
 
-    index_handler = LocalIndexHandler(tmp_path)
+    index_handler = LocalHandler(tmp_path)
     res_it = index_handler.iterate_text_pairs()
 
     expected_res = [(1, quote_1), (1, origin_1), (2, quote_2), (2, origin_2)]
@@ -35,7 +35,7 @@ def test_local_iterate_text_pairs(tmp_path):
 
 
 def test_local_write_index(tmp_path):
-    index_handler = LocalIndexHandler(tmp_path)
+    index_handler = LocalHandler(tmp_path)
     index = {"a": 1, "b": 2}
     index_handler.write_index("index", index)
 
@@ -53,7 +53,7 @@ def test_local_load_index(tmp_path):
     with open(path, "w") as f:
         json.dump(obj, f)
 
-    index_handler = LocalIndexHandler(tmp_path)
+    index_handler = LocalHandler(tmp_path)
     data = index_handler.load_index("test")
     assert data == obj
 
@@ -96,7 +96,7 @@ def test_aws_iterate_text_pairs(s3_resource, bucket_name, s3_test):
     object = s3_resource.Object(bucket_name, "2.txt")
     object.put(Body="baz")
 
-    index_handler = AWSIndexHandler(s3_resource)
+    index_handler = AWSHandler(s3_resource)
 
     it = index_handler.iterate_text_pairs()
     assert (1, b"foo") == next(it)
@@ -111,7 +111,7 @@ def test_aws_iterate_text_pairs(s3_resource, bucket_name, s3_test):
 def test_aws_write_index(s3_resource, bucket_name, s3_test):
     input_dict = {"1": ["1", "2", "3"], "2": ["2", "3"]}
 
-    index_handler = AWSIndexHandler(s3_resource)
+    index_handler = AWSHandler(s3_resource)
     index_handler.write_index("index.json", input_dict)
     body = s3_resource.Object(bucket_name, "index.json").get()["Body"]
     assert input_dict == json.load(body)
