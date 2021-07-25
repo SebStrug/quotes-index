@@ -69,6 +69,29 @@ def test_local_load_index(tmp_path):
     assert data == obj
 
 
+def test_local_add_quote(tmp_path):
+    initial_quote = "'Some quote\nSeb, This Test'"
+    initial_quote_path = Path(tmp_path) / "1.txt"
+    with open(initial_quote_path, "w") as f:
+        f.write(initial_quote)
+
+    quote_to_add = {
+        "content": "some other quote",
+        "lead_in": None,
+        "attribution": "Seb",
+        "source": "This test",
+    }
+    handler = LocalHandler(tmp_path)
+    handler.add_quote(**quote_to_add)
+
+    expected_path = Path(tmp_path / "2.txt")
+    print(list(Path(tmp_path).glob("*")))
+    assert expected_path.exists()
+    with open(expected_path, "r") as f:
+        res = f.read()
+    assert "'some other quote'\nSeb, This test\n" == res
+
+
 @pytest.fixture
 def s3_resource():
     with mock_s3():

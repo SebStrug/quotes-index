@@ -60,6 +60,12 @@ class Handler:
     @abstractmethod
     def load_index(self, *args: Any):
         """Load in an dictionary containing an inverted index from path"""
+        raise NotImplementedError
+
+    @abstractmethod
+    def add_quote(self, *args: Any, **kwargs: Any):
+        """Add a quote, do NOT update the index"""
+        raise NotImplementedError
 
 
 class LocalHandler(Handler):
@@ -99,6 +105,15 @@ class LocalHandler(Handler):
         with objs[-1].open("r") as f:
             data = json.load(f)
         return data
+
+    def add_quote(self, **kwargs):
+        last_quote_index = list(self.local_path.glob("*.txt"))[-1].stem
+        next_quote_index = int(last_quote_index.rstrip(".txt")) + 1
+        next_quote_fname = self.local_path / f'{next_quote_index}.txt'
+
+        quote = form_quote(kwargs.pop("content"), **kwargs)
+        with open(next_quote_fname, "w") as f:
+            f.write(quote + "\n")
 
 
 class AWSHandler(Handler):
