@@ -1,0 +1,22 @@
+body {
+    font-family: 'Noto Serif', serif;
+}
+
+
+.center {
+    margin: 0;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+.below-center{
+    margin: 0;
+    position: fixed;
+    top: 60%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%); 
+}
