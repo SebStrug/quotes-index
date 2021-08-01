@@ -17,7 +17,7 @@ def test_form_quote():
         "source": "This test",
     }
     expected = "'some other quote'\nSeb, This test"
-    assert expected == form_quote(input.pop('content'), **input)
+    assert expected == form_quote(input.pop("content"), **input)
 
 
 def test_local_iterate_text_pairs(tmp_path):

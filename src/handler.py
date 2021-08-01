@@ -109,7 +109,7 @@ class LocalHandler(Handler):
     def add_quote(self, **kwargs):
         last_quote_index = list(self.local_path.glob("*.txt"))[-1].stem
         next_quote_index = int(last_quote_index.rstrip(".txt")) + 1
-        next_quote_fname = self.local_path / f'{next_quote_index}.txt'
+        next_quote_fname = self.local_path / f"{next_quote_index}.txt"
 
         quote = form_quote(kwargs.pop("content"), **kwargs)
         with open(next_quote_fname, "w") as f:
@@ -166,6 +166,5 @@ class AWSHandler(Handler):
             object = self.s3_res.Object(self.bucket, s3_key)
             object.put(Body=json.dumps(index))
         except BotoCoreError:
-            logger.error(
-                f"Failed to upload dictionary to key: {s3_key}", exc_info=True)
+            logger.error(f"Failed to upload dictionary to key: {s3_key}", exc_info=True)
             raise
