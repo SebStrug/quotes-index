@@ -36,9 +36,7 @@ class Quote(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_home(request: Request):
-    return templates.TemplateResponse(
-        "home.html", {"request": request}
-    )
+    return templates.TemplateResponse("home.html", {"request": request})
 
 
 @app.post("/", response_class=HTMLResponse)
@@ -67,7 +65,7 @@ def get_all_quotes(word: str) -> List[str]:
     """
     word_id = word_id_map.get(word.lower())
     if not word_id:
-        logging.debug(f'Word: {word} not in inverted index.')
+        logging.debug(f"Word: {word} not in inverted index.")
         return []
 
     all_file_ids = inverted_index.get(str(word_id))

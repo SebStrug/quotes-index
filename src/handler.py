@@ -122,8 +122,8 @@ class AWSHandler(Handler):
         Args:
             s3_res: instantiated s3 resource object
         """
-        self.bucket = os.getenv("S3_BUCKET")
-        self.region = os.getenv("AWS_REGION", "eu-west-1")
+        self.bucket = os.getenv("QUOTES_INDEX_S3_BUCKET")
+        self.region = os.getenv("QUOTES_INDEX_AWS_REGION", "eu-west-1")
         self.s3_res = s3_res
 
     def iterate_text_pairs(self) -> Iterator[Tuple[int, str]]:
