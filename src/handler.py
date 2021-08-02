@@ -4,6 +4,7 @@ from datetime import datetime
 from pathlib import Path
 import json
 import itertools
+import re
 import os
 import logging
 
@@ -138,6 +139,9 @@ class AWSHandler(Handler):
         logger.info(f"Iterating through items in bucket: {bucket}")
 
         for f in bucket.objects.all():
+            if not re.match(r"\d+.txt", f.key):
+                continue
+
             # Assume s3 keys are named by order in bucket, as per spec
             file_id = int(Path(f.key).stem)
             file_id_iterator = itertools.repeat(file_id)
@@ -159,12 +163,36 @@ class AWSHandler(Handler):
             e.g. `index_20210527.json`
             index: dictionary to write to S3
         """
-        if not dict:
+        if not index:
             return
 
         try:
             object = self.s3_res.Object(self.bucket, s3_key)
             object.put(Body=json.dumps(index))
         except BotoCoreError:
-            logger.error(f"Failed to upload dictionary to key: {s3_key}", exc_info=True)
+            logger.error(
+                f"Failed to upload dictionary to key: {s3_key}", exc_info=True)
             raise
+
+    def load_index(self, s3_key: str) -> Dict:
+        """Load an index, or any dictionary from an S3 object
+
+        Args:
+            s3_key: s3 path to read from
+        """
+        try:
+            object = self.s3_res.Object(self.bucket, s3_key)
+            response = object.get()
+            return json.loads(response['Body'].read())
+        except BotoCoreError:
+            logger.error(
+                f"Failed to load dictionary from key: {s3_key}", exc_info=True)
+            raise
+
+    def add_quote(self, **kwargs):
+        tstamp = int(datetime.now().timestamp())
+        s3_key = f"{tstamp}.txt"
+
+        quote = form_quote(kwargs.pop("content"), **kwargs)
+        object = self.s3_res.Object(self.bucket, s3_key)
+        object.put(Body=quote)

@@ -112,6 +112,7 @@ def region():
 @pytest.fixture
 def aws_credentials(bucket_name, region):
     """Mocked AWS Credentials for moto."""
+    os.environ["QUOTES_INDEX_S3_BUCKET"] = bucket_name
     os.environ["S3_BUCKET"] = bucket_name
     os.environ["AWS_REGION"] = region
 
@@ -120,6 +121,14 @@ def aws_credentials(bucket_name, region):
 def s3_test(s3_resource, bucket_name, region, aws_credentials):
     bucket = s3_resource.Bucket(bucket_name)
     bucket.create(CreateBucketConfiguration={"LocationConstraint": region})
+    yield
+
+
+@pytest.fixture
+def s3_index(s3_resource, bucket_name, s3_test):
+    """Preload index onto S3"""
+    object = s3_resource.Object(bucket_name, "index_test.json")
+    object.put(Body=json.dumps({"1": ["1", "2", "3"], "2": ["2", "3"]}))
     yield
 
 
@@ -147,5 +156,22 @@ def test_aws_write_index(s3_resource, bucket_name, s3_test):
 
     index_handler = AWSHandler(s3_resource)
     index_handler.write_index("index.json", input_dict)
+
     body = s3_resource.Object(bucket_name, "index.json").get()["Body"]
     assert input_dict == json.load(body)
+
+
+def test_aws_load_index(s3_resource, bucket_name, s3_test, s3_index):
+    index_handler = AWSHandler(s3_resource)
+    index = index_handler.load_index("index_test.json")
+    assert index == {"1": ["1", "2", "3"], "2": ["2", "3"]}
+
+
+def test_aws_add_quote(s3_resource, bucket_name, s3_test):
+    index_handler = AWSHandler(s3_resource)
+    index_handler.add_quote(content="Test quote")
+
+    bucket = s3_resource.Bucket(bucket_name)
+    for f in bucket.objects.all():
+        obj = f.get()
+    assert obj['Body'].read().decode() == "'Test quote'\nAnonymous"
