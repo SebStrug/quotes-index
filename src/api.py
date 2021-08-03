@@ -42,7 +42,10 @@ async def serve_home(request: Request):
 @app.post("/", response_class=HTMLResponse)
 async def search_word(request: Request, word: str = Form(...)):
     quotes = get_all_quotes(word)
-    single_quote = choice(quotes)
+    if quotes:
+        single_quote = choice(quotes)
+    else:
+        single_quote = 'N/A'
     return templates.TemplateResponse(
         "quote.html", {"request": request, "quote": single_quote}
     )
