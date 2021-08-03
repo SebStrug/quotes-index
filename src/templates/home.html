@@ -4,6 +4,7 @@
 <head>
     <link rel="shortcut icon" href="{{ url_for('static', path='favicon.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='stylesheet.css') }}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
 
     <!-- Noto-serif font -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -14,15 +15,25 @@
 <body>
     <div class="center content">
         <h1>Quotes I like</h1>
+    </div>
+    <div class="below-center">
         <form method="post" id="get-quote">
-            <label for="word">Word to search for:</label>
+            <input type="text" id="word" name="word" , placeholder="Enter a word" , color=#ccc>
             <br>
-            <input type="text" id="word" name="word" , value="value">
             <br>
-            <input type="submit">
+            <br>
+            <br>
+            <input type="submit" , value="Search" , class="below-center">
         </form>
     </div>
+
+    <div class="footer">
+        <a href="https://github.com/SebStrug/quotes-index">
+            <i class="fa fa-github fa-lg"></i>
+        </a>
+    </div>
 </body>
+
 
 
 </html>

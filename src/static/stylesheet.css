@@ -2,7 +2,6 @@ body {
     font-family: 'Noto Serif', serif;
 }
 
-
 .center {
     margin: 0;
     position: fixed;
@@ -20,3 +19,41 @@ body {
     -ms-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%); 
 }
+
+form, input {
+    font-family: inherit;
+    font-size: 100%;
+}
+
+input[type=text]:focus {
+    border-color:#333;
+}
+
+input[type=text] {
+    padding:5px; 
+}
+
+input[type=submit] {
+    padding:2px 5px;
+    border:10px none;
+    cursor:pointer;
+    -webkit-border-radius: 10px;
+    border-radius: 10px; 
+    text-align: center;
+}
+
+div.container {
+	position: relative;
+	height: 110px;
+	width: 120px;
+	border: dashed 1px red;
+}
+
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 1%;
+  width: 100%;
+  text-align: center;
+}
+
