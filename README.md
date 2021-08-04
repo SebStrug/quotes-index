@@ -1,13 +1,22 @@
-# Inverted index
-Build an inverted index using a list of custom quotes
+# Quotes I Like
 
-Works with a local path, as well as S3.
+Serve quotes I like with an inverted index.
 
-TODO:
-1. Schedule to run every 3 days, using serverless.
-1. Provide API to search and add quotes
+There's a million quote apps out there. This is a way for me to store and serve quotes that **I like**.
+Works locally and with AWS.
 
-### Details
-Quotes are made from a large text file that I add to, as I read quotes that I like. I have a script (not included) that splits these up into files with one quote per file, each filename being a consecutive integer (`1.txt`, `2.txt`, ...).
+1. An inverted index for words in the quotes using `src.index`, run from `src.main`
+1. Quotes are served to a web page via `src.api`
+1. Local and AWS paths are managed by `src.handler`
+1. Webpage stored in `src.static`, `src.templates`
+1. Infrastructure provisioned with terraform
+1. (todo) Serverless build of index
+1. Pipenv for requirement management
+1. Pytest for testing in `tests`
 
-I'm using this as a playground to play with pytest, serverless, terraform, pipenv, while learning about data structures.
+You should be able to replicate this setup for your own uses.
+
+## Try it yourself
+1. Write down some quotes in the `manual` directory in a `main.txt` file. See `manual.examples`.
+1. Run `manual.split_quotes` to get the required format of a quote per enumerated file (`1.txt`, `2.txt`, ...) in a `quotes` directory. 
+1. Upload to S3 with `manual.upload_quotes`
