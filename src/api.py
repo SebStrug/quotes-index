@@ -45,7 +45,7 @@ async def search_word(request: Request, word: str = Form(...)):
     if quotes:
         single_quote = choice(quotes)
     else:
-        single_quote = 'N/A'
+        single_quote = "N/A"
     return templates.TemplateResponse(
         "quote.html", {"request": request, "quote": single_quote}
     )

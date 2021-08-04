@@ -174,4 +174,4 @@ def test_aws_add_quote(s3_resource, bucket_name, s3_test):
     bucket = s3_resource.Bucket(bucket_name)
     for f in bucket.objects.all():
         obj = f.get()
-    assert obj['Body'].read().decode() == "'Test quote'\nAnonymous"
+    assert obj["Body"].read().decode() == "'Test quote'\nAnonymous"

@@ -174,8 +174,8 @@ class AWSHandler(Handler):
                 f"Failed to upload dictionary to key: {s3_key}", exc_info=True)
             raise
 
-    def load_index(self, s3_key: str) -> Dict:
-        """Load an index, or any dictionary from an S3 object
+    def load_object(self, s3_key: str) -> Dict:
+        """Serve the data in an S3 object
 
         Args:
             s3_key: s3 path to read from
@@ -183,7 +183,21 @@ class AWSHandler(Handler):
         try:
             object = self.s3_res.Object(self.bucket, s3_key)
             response = object.get()
-            return json.loads(response['Body'].read())
+            return response["Body"].read()
+        except BotoCoreError:
+            logger.error(
+                f"Failed to load dictionary from key: {s3_key}", exc_info=True)
+            raise
+
+    def load_index(self, s3_key: str) -> Dict:
+        """Load an index, or any dictionary from an S3 object
+
+        Args:
+            s3_key: s3 path to read from
+        """
+        try:
+            object = self.load_object(s3_key)
+            return json.loads(object)
         except BotoCoreError:
             logger.error(
                 f"Failed to load dictionary from key: {s3_key}", exc_info=True)
