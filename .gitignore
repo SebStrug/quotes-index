@@ -10,7 +10,6 @@ terraform.tfstate*
 quotes/*.txt
 quotes/*.json
 
-# folder containing text file containing initial quotes,
-# and a script to split this into individual files
-manual/*
+# Don't upload my favourite quotes
+manual/main.txt
 
