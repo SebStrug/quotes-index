@@ -1,16 +1,16 @@
 """Index.py contais functions for creating an inverted index."""
 
 from collections import defaultdict
-from typing import Iterator, List
+from typing import Iterator, Tuple, List, Dict
 import itertools
 import string
 
 # Create a mapping from words to unique IDs
 # ~470,000 words in English, should be fine to store in memory
-WORD_ID_MAP: defaultdict[str, int] = defaultdict(itertools.count().__next__)
+WORD_ID_MAP: Dict[str, int] = defaultdict(itertools.count().__next__)
 
 # Type alias for clarity
-WordFilePair = tuple[int, int]
+WordFilePair = Tuple[int, int]
 
 
 def get_text_word_ids(text: str) -> Iterator[int]:
@@ -29,7 +29,8 @@ def get_text_word_ids(text: str) -> Iterator[int]:
         if word == "":
             continue
         # Remove punctuation, make string uniform
-        word = word.translate(str.maketrans("", "", string.punctuation)).lower()
+        word = word.translate(str.maketrans(
+            "", "", string.punctuation)).lower()
         yield WORD_ID_MAP[word]
 
 
@@ -51,7 +52,7 @@ def get_word_file_pairs(file_id: int, text: str) -> Iterator[WordFilePair]:
 
 def create_inverted_index(
     file_line_it: Iterator[WordFilePair],
-) -> defaultdict[int, List[int]]:
+) -> Dict[int, List[int]]:
     """Given an iterator producing pairs of (<file-id>, <line-from-file>), produce
     an inverted index containing a mapping for each word ID to the set of all file IDs
     that contain that word.
