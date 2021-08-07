@@ -4,8 +4,8 @@ from typing import Dict
 
 import boto3
 
-from src.index import create_inverted_index, WORD_ID_MAP
-from src.handler import AWSHandler
+from index import create_inverted_index, WORD_ID_MAP
+from handler import AWSHandler
 
 
 def lambda_handler(event: Dict[str, str], context):
