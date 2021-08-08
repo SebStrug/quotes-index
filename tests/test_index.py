@@ -6,7 +6,9 @@ from src import index
 
 
 class BasicTestCase(unittest.TestCase):
-    """Base test class to override the module level variable WORD_ID_MAP for each test"""
+    """Base test class to override the module level variable
+    WORD_ID_MAP for each test
+    """
 
     def setUp(self):
         index.WORD_ID_MAP = defaultdict(itertools.count().__next__)

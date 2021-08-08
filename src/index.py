@@ -1,7 +1,7 @@
 """Index.py contais functions for creating an inverted index."""
 
 from collections import defaultdict
-from typing import Iterator, Tuple, List, Dict
+from typing import Iterator, Tuple, List, Dict, Union
 import itertools
 import string
 
@@ -11,6 +11,7 @@ WORD_ID_MAP: Dict[str, int] = defaultdict(itertools.count().__next__)
 
 # Type alias for clarity
 WordFilePair = Tuple[int, int]
+WordLinePair = Tuple[int, str]
 
 
 def get_text_word_ids(text: str) -> Iterator[int]:
@@ -29,12 +30,13 @@ def get_text_word_ids(text: str) -> Iterator[int]:
         if word == "":
             continue
         # Remove punctuation, make string uniform
-        word = word.translate(str.maketrans(
-            "", "", string.punctuation)).lower()
+        word = word.translate(str.maketrans("", "", string.punctuation)).lower()
         yield WORD_ID_MAP[word]
 
 
-def get_word_file_pairs(file_id: int, text: str) -> Iterator[WordFilePair]:
+def get_word_file_pairs(
+    file_id: int, text: Union[str, bytes]
+) -> Iterator[WordFilePair]:
     """Given a file-id its text contents, return an iterator with file-id
     and word-id pairs.
 
@@ -46,12 +48,17 @@ def get_word_file_pairs(file_id: int, text: str) -> Iterator[WordFilePair]:
         iterator of (word-id, file-id) pairs
     """
     file_id_it = itertools.repeat(file_id)
+    # S3 serves lines as bytes
+    try:
+        text = text.decode()
+    except (UnicodeDecodeError, AttributeError):
+        pass
     word_id_it = get_text_word_ids(text)
     return zip(word_id_it, file_id_it)
 
 
 def create_inverted_index(
-    file_line_it: Iterator[WordFilePair],
+    file_line_it: Iterator[WordLinePair],
 ) -> Dict[int, List[int]]:
     """Given an iterator producing pairs of (<file-id>, <line-from-file>), produce
     an inverted index containing a mapping for each word ID to the set of all file IDs

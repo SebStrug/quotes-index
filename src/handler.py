@@ -80,7 +80,7 @@ class LocalHandler(Handler):
         """
         self.local_path = local_path
 
-    def iterate_text_pairs(self):
+    def iterate_text_pairs(self) -> Iterator[Tuple[int, str]]:
         for fname in Path(self.local_path).glob("*.txt"):
             file_id = int(fname.stem)
             file_id_iterator = itertools.repeat(file_id)
