@@ -7,9 +7,11 @@ import itertools
 import re
 import os
 import logging
+import sys
 
 from botocore.exceptions import BotoCoreError
 
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -83,6 +85,7 @@ class LocalHandler(Handler):
     def iterate_text_pairs(self) -> Iterator[Tuple[int, str]]:
         for fname in Path(self.local_path).glob("*.txt"):
             file_id = int(fname.stem)
+            logger.debug(f"Found file ID: {file_id}")
             file_id_iterator = itertools.repeat(file_id)
             with fname.open("r") as f:
                 yield from zip(file_id_iterator, f.read().splitlines())
@@ -95,6 +98,7 @@ class LocalHandler(Handler):
         path = Path(self.local_path) / f"{prefix}-{dt_str}.json"
         with path.open("w") as f:
             json.dump(index, f)
+        logger.info(f"Wrote dictionary to path: {path}")
 
     def load_index(self, prefix: str) -> Dict:
         """Searches the local path for a prefix, loads in the latest
@@ -144,6 +148,7 @@ class AWSHandler(Handler):
 
             # Assume s3 keys are named by order in bucket, as per spec
             file_id = int(Path(f.key).stem)
+            logger.debug(f"Found file ID: {file_id}")
             file_id_iterator = itertools.repeat(file_id)
 
             try:
@@ -169,6 +174,7 @@ class AWSHandler(Handler):
         try:
             object = self.s3_res.Object(self.bucket, s3_key)
             object.put(Body=json.dumps(index))
+            logger.info(f"Wrote dictionary to key: {s3_key}")
         except BotoCoreError:
             logger.error(f"Failed to upload dictionary to key: {s3_key}", exc_info=True)
             raise
