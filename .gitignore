@@ -13,3 +13,5 @@ quotes/*.json
 # Don't upload my favourite quotes
 manual/main.txt
 
+# Personal notes
+notes.md
