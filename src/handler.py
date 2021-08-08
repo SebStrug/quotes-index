@@ -185,8 +185,12 @@ class AWSHandler(Handler):
         Args:
             s3_key: s3 path to read from
         """
+        bucket = self.s3_res.Bucket(self.bucket)
+        for obj in bucket.objects.filter(Prefix=s3_key):
+            object = obj
+
         try:
-            object = self.s3_res.Object(self.bucket, s3_key)
+            # object = self.s3_res.Object(self.bucket, s3_key)
             response = object.get()
             return response["Body"].read()
         except BotoCoreError:
@@ -197,7 +201,8 @@ class AWSHandler(Handler):
         """Load an index, or any dictionary from an S3 object
 
         Args:
-            s3_key: s3 path to read from
+            s3_key: s3 path to read from. If a prefix is passed,
+            take the last object
         """
         try:
             object = self.load_object(s3_key)

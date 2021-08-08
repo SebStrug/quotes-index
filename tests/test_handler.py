@@ -129,6 +129,8 @@ def s3_index(s3_resource, bucket_name, s3_test):
     """Preload index onto S3"""
     object = s3_resource.Object(bucket_name, "index_test.json")
     object.put(Body=json.dumps({"1": ["1", "2", "3"], "2": ["2", "3"]}))
+    object = s3_resource.Object(bucket_name, "index_zzz.json")
+    object.put(Body=json.dumps({"1": ["1", "2", "3"], "2": ["2", "3"]}))
     yield
 
 
@@ -164,6 +166,12 @@ def test_aws_write_index(s3_resource, bucket_name, s3_test):
 def test_aws_load_index(s3_resource, bucket_name, s3_test, s3_index):
     index_handler = AWSHandler(s3_resource)
     index = index_handler.load_index("index_test.json")
+    assert index == {"1": ["1", "2", "3"], "2": ["2", "3"]}
+
+
+def test_aws_load_latest_index(s3_resource, bucket_name, s3_test, s3_index):
+    index_handler = AWSHandler(s3_resource)
+    index = index_handler.load_index("index")
     assert index == {"1": ["1", "2", "3"], "2": ["2", "3"]}
 
 
