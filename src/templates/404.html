@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="shortcut icon" href="{{ url_for('static', path='favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='stylesheet.css') }}">
+
+    <!-- Noto-serif font -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif&display=swap" rel="stylesheet">
+</head>
+
+
+<body>
+    <div id="quote" class="center content">
+        I don't have any quotes with that word.
+        <br>
+        Here's a random quote instead:
+        <br>
+        <br>
+        {{ quote }}
+    </div>
+    <div id="home" , class="below-center content">
+        <a href="/">Go back</a>
+    </div>
+</body>
+
+
+</html>

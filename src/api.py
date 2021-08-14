@@ -1,12 +1,15 @@
 from pathlib import Path
 from random import choices, choice
 import logging
-from typing import List
+from typing import List, Tuple, Dict
 
-from fastapi import FastAPI, Request, Form
+import boto3
+
+from fastapi import FastAPI, Request, Form, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from pydantic import BaseModel
 
 from src.handler import LocalHandler
@@ -42,18 +45,32 @@ async def serve_home(request: Request):
 @app.post("/", response_class=HTMLResponse)
 async def search_word(request: Request, word: str = Form(...)):
     quotes = get_all_quotes(word)
-    if quotes:
-        single_quote = choice(quotes)
-    else:
-        single_quote = "N/A"
+    if not quotes:
+        raise HTTPException(
+            status_code=404, detail=f"No quote with word '{word}'")
+    single_quote = choice(quotes)
     return templates.TemplateResponse(
         "quote.html", {"request": request, "quote": single_quote}
     )
 
 
+@app.exception_handler(StarletteHTTPException)
+async def custom_http_exception_handler(request, exc):
+    quote = get_random_quote()
+    return templates.TemplateResponse("404.html", {"request": request, "quote": quote})
+
+
 @app.post("/quotes")
 async def add_quote(quote: Quote):
     return quote.dict()
+
+
+def get_random_quote() -> str:
+    file_id = choice(list(inverted_index.values()))
+    quote_file = next(local_path.glob(f"{file_id}*.txt"))
+    with quote_file.open("r") as f:
+        quote = f.read()
+    return quote
 
 
 def get_all_quotes(word: str) -> List[str]:
