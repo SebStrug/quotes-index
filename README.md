@@ -30,5 +30,5 @@ You should be able to replicate this setup for your own uses.
 
 Want to use AWS?
 1. Upload to quotes S3 with `$ python -m manual.upload_quotes`.
-1. Provision Lambda function, S3 bucket, create appropriate environment variables.
+1. Provision Lambda function, S3 bucket, create appropriate environment variables: `QUOTES_ENV=aws; QUOTES_INDEX_S3_BUCKET=...; QUOTES_INDEX_AWS_REGION=...;`
 

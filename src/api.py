@@ -1,27 +1,41 @@
+from typing import List, Tuple, Dict
 from pathlib import Path
 from random import choices, choice
 import logging
-from typing import List, Tuple, Dict
+import os
 
+from pydantic import BaseModel
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from fastapi import FastAPI, Request, Form, HTTPException
+from cachetools import TTLCache, cached
 import boto3
 
-from fastapi import FastAPI, Request, Form, HTTPException
-from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
-from starlette.exceptions import HTTPException as StarletteHTTPException
-from pydantic import BaseModel
-
-from src.handler import LocalHandler
+from src.handler import LocalHandler, AWSHandler, Handler
 
 
-local_path = Path("quotes")
-index_handler = LocalHandler(local_path)
-quotes_files = local_path.glob("*.txt")
+@cached(cache=TTLCache(maxsize=5000, ttl=3 * 60 * 60))
+def get_handler() -> Handler:
+    if os.getenv("QUOTES_ENV") == "aws":
+        s3 = boto3.resource("s3")
+        handler = AWSHandler(s3)
+    else:
+        local_path = Path("quotes")
+        handler = LocalHandler(local_path)
+    return handler
 
-inverted_index = index_handler.load_index("index")
-word_id_map = index_handler.load_index("word-ids")
 
+@cached(cache=TTLCache(maxsize=5000, ttl=3 * 60 * 60))
+def get_indexes() -> Tuple[Dict, Dict]:
+    handler = get_handler()
+    inverted_index = handler.load_index("index")
+    word_id_map = handler.load_index("word-ids")
+    return inverted_index, word_id_map
+
+
+INVERTED_INDEX, WORD_ID_MAP = get_indexes()
 
 app = FastAPI()
 
@@ -44,7 +58,7 @@ async def serve_home(request: Request):
 
 @app.post("/", response_class=HTMLResponse)
 async def search_word(request: Request, word: str = Form(...)):
-    quotes = get_all_quotes(word)
+    quotes = get_quotes(word)
     if not quotes:
         raise HTTPException(
             status_code=404, detail=f"No quote with word '{word}'")
@@ -66,14 +80,12 @@ async def add_quote(quote: Quote):
 
 
 def get_random_quote() -> str:
-    file_id = choice(list(inverted_index.values()))
-    quote_file = next(local_path.glob(f"{file_id}*.txt"))
-    with quote_file.open("r") as f:
-        quote = f.read()
-    return quote
+    file_id = choice(list(INVERTED_INDEX.values()))
+    handler = get_handler()
+    return handler.load_object(str(file_id))
 
 
-def get_all_quotes(word: str) -> List[str]:
+def get_quotes(word: str) -> List[str]:
     """Given a word, search the inverted index and retrieve
     all quotes containing that word. Case insensitive.
 
@@ -83,17 +95,16 @@ def get_all_quotes(word: str) -> List[str]:
     Returns:
         list of all quotes containing given word.
     """
-    word_id = word_id_map.get(word.lower())
+    word_id = WORD_ID_MAP.get(word.lower())
     if not word_id:
         logging.debug(f"Word: {word} not in inverted index.")
         return []
 
-    all_file_ids = inverted_index.get(str(word_id))
+    all_file_ids = INVERTED_INDEX.get(str(word_id))
+    handler = get_handler()
 
     quotes = set()
     for file_id in choices(all_file_ids, k=1):
-        quote_file = next(local_path.glob(f"{file_id}*.txt"))
-        with quote_file.open("r") as f:
-            quote = f.read()
+        quote = handler.load_object(str(file_id))
         quotes.add(quote)
     return list(quotes)

@@ -61,6 +61,11 @@ class Handler:
         raise NotImplementedError
 
     @abstractmethod
+    def load_object(self, *args: Any):
+        """Load in any object from the environment"""
+        raise NotImplementedError
+
+    @abstractmethod
     def load_index(self, *args: Any):
         """Load in an dictionary containing an inverted index from path"""
         raise NotImplementedError
@@ -100,16 +105,28 @@ class LocalHandler(Handler):
             json.dump(index, f)
         logger.info(f"Wrote dictionary to path: {path}")
 
+    def load_object(self, prefix: str) -> str:
+        """Load an object by prefix from local path.
+        If several objects have the same prefix, load the
+        last object
+        """
+        objs = Path(self.local_path).glob(f"{prefix}*")
+        for obj in objs:
+            pass
+        try:
+            with obj.open("r") as f:
+                data = f.read()
+        except NameError:
+            logging.error(f"No object with prefix: {prefix}")
+            return ""
+        return data
+
     def load_index(self, prefix: str) -> Dict:
         """Searches the local path for a prefix, loads in the latest
         associated object from JSON as a dictionary.
         """
-        objs = list(Path(self.local_path).glob(f"{prefix}*.json"))
-        if not objs:
-            raise FileNotFoundError(f"No objects with prefix: {prefix}")
-        with objs[-1].open("r") as f:
-            data = json.load(f)
-        return data
+        data_str = self.load_object(prefix)
+        return json.loads(data_str)
 
     def add_quote(self, **kwargs):
         last_quote_index = list(self.local_path.glob("*.txt"))[-1].stem
@@ -179,11 +196,12 @@ class AWSHandler(Handler):
             logger.error(f"Failed to upload dictionary to key: {s3_key}", exc_info=True)
             raise
 
-    def load_object(self, s3_key: str) -> Dict:
+    def load_object(self, s3_key: str) -> str:
         """Serve the data in an S3 object
 
         Args:
-            s3_key: s3 path to read from
+            s3_key: s3 path to read from. If a prefix is used,
+            load the last object
         """
         bucket = self.s3_res.Bucket(self.bucket)
         for obj in bucket.objects.filter(Prefix=s3_key):
@@ -194,7 +212,7 @@ class AWSHandler(Handler):
             response = object.get()
             return response["Body"].read()
         except BotoCoreError:
-            logger.error(f"Failed to load dictionary from key: {s3_key}", exc_info=True)
+            logger.error(f"Failed to load object from key: {s3_key}", exc_info=True)
             raise
 
     def load_index(self, s3_key: str) -> Dict:
@@ -202,7 +220,7 @@ class AWSHandler(Handler):
 
         Args:
             s3_key: s3 path to read from. If a prefix is passed,
-            take the last object
+            load the last object.
         """
         try:
             object = self.load_object(s3_key)
