@@ -2,6 +2,8 @@
 
 Serve quotes I like with an inverted index.
 
+Check out [quotes.sebstrug.com](quotes.sebstrug.com).
+
 There's a million quote apps out there. This is a way for me to store and serve quotes that **I like**.
 Works locally and with AWS.
 
