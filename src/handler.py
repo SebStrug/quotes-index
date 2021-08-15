@@ -11,7 +11,7 @@ import sys
 
 from botocore.exceptions import BotoCoreError
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -205,7 +205,7 @@ class AWSHandler(Handler):
             object = obj
 
         try:
-            # object = self.s3_res.Object(self.bucket, s3_key)
+            logger.info(f"Loaded object: {object}")
             response = object.get()
             return response["Body"].read()
         except BotoCoreError:
