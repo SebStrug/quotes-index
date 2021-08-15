@@ -13,8 +13,7 @@ def test_form_quote():
     input = {
         "content": "some other quote",
         "lead_in": None,
-        "attribution": "Seb",
-        "source": "This test",
+        "source": "Seb, This test",
     }
     expected = "'some other quote'\nSeb, This test"
     assert expected == form_quote(input.pop("content"), **input)
@@ -78,8 +77,7 @@ def test_local_add_quote(tmp_path):
     quote_to_add = {
         "content": "some other quote",
         "lead_in": None,
-        "attribution": "Seb",
-        "source": "This test",
+        "source": "Seb, This test",
     }
     handler = LocalHandler(tmp_path)
     handler.add_quote(**quote_to_add)

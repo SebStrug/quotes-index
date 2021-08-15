@@ -17,9 +17,8 @@ logger = logging.getLogger(__name__)
 
 def form_quote(
     content: str,
-    attribution: str = "Anonymous",
     lead_in: Optional[str] = None,
-    source: Optional[str] = None,
+    source: str = "Anonymous",
 ) -> str:
     """Create a quote out of several provided fields
 
@@ -33,16 +32,14 @@ def form_quote(
         Quote of the form
         ```
         <lead_in>...
-        <content>
-        <attribution>, <source>
+        '<content>'
+        <source>
     """
     if not content:
         raise ValueError("No quote provided")
 
     lead_in = lead_in + "..." if lead_in else ""
-
-    ending = ", ".join(filter(None, (attribution, source)))
-    return "\n".join((lead_in, f"'{content}'", ending)).strip()
+    return "\n".join((lead_in, f"'{content}'", source)).strip()
 
 
 class Handler:
@@ -193,7 +190,8 @@ class AWSHandler(Handler):
             object.put(Body=json.dumps(index))
             logger.info(f"Wrote dictionary to key: {s3_key}")
         except BotoCoreError:
-            logger.error(f"Failed to upload dictionary to key: {s3_key}", exc_info=True)
+            logger.error(
+                f"Failed to upload dictionary to key: {s3_key}", exc_info=True)
             raise
 
     def load_object(self, s3_key: str) -> str:
@@ -212,7 +210,8 @@ class AWSHandler(Handler):
             response = object.get()
             return response["Body"].read()
         except BotoCoreError:
-            logger.error(f"Failed to load object from key: {s3_key}", exc_info=True)
+            logger.error(
+                f"Failed to load object from key: {s3_key}", exc_info=True)
             raise
 
     def load_index(self, s3_key: str) -> Dict:
@@ -226,7 +225,8 @@ class AWSHandler(Handler):
             object = self.load_object(s3_key)
             return json.loads(object)
         except BotoCoreError:
-            logger.error(f"Failed to load dictionary from key: {s3_key}", exc_info=True)
+            logger.error(
+                f"Failed to load dictionary from key: {s3_key}", exc_info=True)
             raise
 
     def add_quote(self, **kwargs):
