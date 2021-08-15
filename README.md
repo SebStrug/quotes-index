@@ -7,14 +7,14 @@ Check out [quotes.sebstrug.com](quotes.sebstrug.com).
 There's a million quote apps out there. This is a way for me to store and serve quotes that **I like**.
 Works locally and with AWS.
 
+Summary:
 1. An inverted index for words in the quotes using `src.index`, run from `src.main`
-1. Quotes are served to a web page via `src.api`
+1. Quotes are served to a web page via `src.api`, GET & POST defined.
 1. Local and AWS paths are managed by `src.handler`
 1. Webpage stored in `src.static`, `src.templates`
 1. Infrastructure provisioned with terraform
-1. (todo) POST to add new quote
+1. Manually set up Eventbridge rule to trigger a new index every 3 days.
 1. (todo) Infrastructure-as-code for serverless build of index. Right now it's all clickety-click on AWS.
-1. (todo) Trigger build index on new quote added. Right now I've set up an Eventbridge rule to trigger a new index every 3 days.
 
 Other:
 1. Pipenv for requirement management
