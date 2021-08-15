@@ -104,7 +104,7 @@ async def add_quote(request: Request):
 
 
 @app.post("/add", response_model=Quote)
-def form_post(
+def add_quotes_post(
     request: Request,
     lead_in: str = Form(...),
     content: str = Form(...),
