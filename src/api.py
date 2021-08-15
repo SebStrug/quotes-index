@@ -19,6 +19,10 @@ from src.handler import LocalHandler, AWSHandler, Handler
 
 @cached(cache=TTLCache(maxsize=5000, ttl=3 * 60 * 60))
 def get_handler() -> Handler:
+    """Load the local or AWS handler, caching for 3 hours.
+    Default to loading local handler if environment variable
+    is not defined.
+    """
     if os.getenv("QUOTES_ENV") == "aws":
         s3 = boto3.resource("s3")
         handler = AWSHandler(s3)
@@ -30,6 +34,7 @@ def get_handler() -> Handler:
 
 @cached(cache=TTLCache(maxsize=5000, ttl=3 * 60 * 60))
 def get_indexes() -> Tuple[Dict, Dict]:
+    """Load the inverted index and word ID map, caching for 3 hours"""
     handler = get_handler()
     inverted_index = handler.load_index("index")
     word_id_map = handler.load_index("word-ids")
