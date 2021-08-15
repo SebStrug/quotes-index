@@ -116,6 +116,7 @@ class LocalHandler(Handler):
         except NameError:
             logging.error(f"No object with prefix: {prefix}")
             return ""
+
         return data
 
     def load_index(self, prefix: str) -> Dict:
@@ -207,10 +208,16 @@ class AWSHandler(Handler):
         try:
             logger.info(f"Loaded object: {object}")
             response = object.get()
-            return response["Body"].read()
+            data = response["Body"].read()
         except BotoCoreError:
             logger.error(f"Failed to load object from key: {s3_key}", exc_info=True)
             raise
+
+        # Handle returning bytes not string
+        try:
+            return data.decode()
+        except (UnicodeDecodeError, AttributeError):
+            return data
 
     def load_index(self, s3_key: str) -> Dict:
         """Load an index, or any dictionary from an S3 object
