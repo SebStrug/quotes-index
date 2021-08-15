@@ -2,6 +2,7 @@ from typing import List, Tuple, Dict
 from pathlib import Path
 from random import choices, choice
 import logging
+import re
 import os
 
 from pydantic import BaseModel
@@ -45,10 +46,9 @@ templates = Jinja2Templates(directory="src/templates")
 
 
 class Quote(BaseModel):
-    lead_in: str = None
+    lead_in: str = ""
     content: str
-    attribution: str = "Anonymous"
-    source: str = None
+    source: str = "Anonymous"
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -60,18 +60,37 @@ async def serve_home(request: Request):
 async def search_word(request: Request, word: str = Form(...)):
     quotes = get_quotes(word)
     if not quotes:
-        raise HTTPException(
-            status_code=404, detail=f"No quote with word '{word}'")
+        raise HTTPException(status_code=404, detail=f"No quote with word '{word}'")
     single_quote = choice(quotes)
+    quote = split_quote(single_quote)
     return templates.TemplateResponse(
-        "quote.html", {"request": request, "quote": single_quote}
+        "quote.html",
+        {
+            "request": request,
+            "lead_in": quote.lead_in,
+            "content": quote.content,
+            "source": quote.source,
+        },
     )
 
 
 @app.exception_handler(StarletteHTTPException)
-async def custom_http_exception_handler(request, exc):
-    quote = get_random_quote()
-    return templates.TemplateResponse("404.html", {"request": request, "quote": quote})
+async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
+    """Handle exceptions by returning a 404 page.
+
+    By default FastAPI returns a simple dictionary
+    """
+    quote_str = get_random_quote()
+    quote = split_quote(quote_str)
+    return templates.TemplateResponse(
+        "404.html",
+        {
+            "request": request,
+            "lead_in": quote.lead_in,
+            "content": quote.content,
+            "source": quote.source,
+        },
+    )
 
 
 @app.post("/quotes")
@@ -108,3 +127,24 @@ def get_quotes(word: str) -> List[str]:
         quote = handler.load_object(str(file_id))
         quotes.add(quote)
     return list(quotes)
+
+
+def split_quote(quote: str) -> Quote:
+    """Turn a quote from raw string form to Quote model class"""
+    quotes_split = quote.split("\n")
+    quote_dict = {}
+    for ind, line in enumerate(quotes_split):
+        if ind == 0 and line.endswith("..."):
+            quote_dict["lead_in"] = line
+
+        if re.match(r"\'.+\'", line, flags=re.DOTALL):
+            quote_dict["content"] = line
+
+        if ind == len(quotes_split) - 1:
+            quote_dict["source"] = line
+
+    return Quote(
+        lead_in=quote_dict.get("lead_in", ""),
+        content=quote_dict.get("content", ""),
+        source=quote_dict.get("source", ""),
+    )
