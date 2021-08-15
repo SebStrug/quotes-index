@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="shortcut icon" href="{{ url_for('static', path='favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='stylesheet.css') }}">
+
+    <!-- Noto-serif font -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif&display=swap" rel="stylesheet">
+</head>
+
+
+<body>
+    <div class="center content">
+        <form method="post">
+            Lead in: <input type="text" name="lead_in" value="" />
+            <br>
+            Content: <input type="text" name="content" value="" />
+            <br>
+            Source: <input type="text" name="source" value="Anonymous" />
+            <br>
+            <input type="submit" />
+        </form>
+    </div>
+    <div id="home" , class="below-center content">
+        <a href="/">Go back</a>
+    </div>
+</body>
+
+
+</html>

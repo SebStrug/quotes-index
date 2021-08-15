@@ -98,9 +98,28 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
     )
 
 
-@app.post("/quotes")
-async def add_quote(quote: Quote):
-    return quote.dict()
+@app.get("/add", response_class=HTMLResponse)
+async def add_quote(request: Request):
+    return templates.TemplateResponse("add_quote.html", {"request": request})
+
+
+@app.post("/add", response_model=Quote)
+def form_post(
+    request: Request,
+    lead_in: str = Form(...),
+    content: str = Form(...),
+    source: str = Form(...),
+):
+    quote = Quote(lead_in=lead_in, content=content, source=source)
+    return templates.TemplateResponse(
+        "quote.html",
+        {
+            "request": request,
+            "lead_in": quote.lead_in,
+            "content": quote.content,
+            "source": quote.source,
+        },
+    )
 
 
 def get_random_quote() -> str:

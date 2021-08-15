@@ -190,8 +190,7 @@ class AWSHandler(Handler):
             object.put(Body=json.dumps(index))
             logger.info(f"Wrote dictionary to key: {s3_key}")
         except BotoCoreError:
-            logger.error(
-                f"Failed to upload dictionary to key: {s3_key}", exc_info=True)
+            logger.error(f"Failed to upload dictionary to key: {s3_key}", exc_info=True)
             raise
 
     def load_object(self, s3_key: str) -> str:
@@ -210,8 +209,7 @@ class AWSHandler(Handler):
             response = object.get()
             return response["Body"].read()
         except BotoCoreError:
-            logger.error(
-                f"Failed to load object from key: {s3_key}", exc_info=True)
+            logger.error(f"Failed to load object from key: {s3_key}", exc_info=True)
             raise
 
     def load_index(self, s3_key: str) -> Dict:
@@ -225,8 +223,7 @@ class AWSHandler(Handler):
             object = self.load_object(s3_key)
             return json.loads(object)
         except BotoCoreError:
-            logger.error(
-                f"Failed to load dictionary from key: {s3_key}", exc_info=True)
+            logger.error(f"Failed to load dictionary from key: {s3_key}", exc_info=True)
             raise
 
     def add_quote(self, **kwargs):
