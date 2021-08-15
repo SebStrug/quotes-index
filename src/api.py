@@ -4,6 +4,7 @@ from random import choices, choice
 import logging
 import re
 import os
+from itertools import chain
 
 from pydantic import BaseModel
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -123,7 +124,8 @@ def add_quotes_post(
 
 
 def get_random_quote() -> str:
-    file_id = choice(list(INVERTED_INDEX.values()))
+    all_file_ids = list(chain.from_iterable(INVERTED_INDEX.values()))
+    file_id = choice(all_file_ids)
     handler = get_handler()
     return handler.load_object(str(file_id))
 
